@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "List";
+}
+
+<h2>Список гостей</h2>
+
+<div class="row">
+    <div class="col-md-9">
+        <form method="get">
+            <input name="search" type="search" placeholder="Поиск гостей по ФИО, E-mail или телефону"/>
+        </form>
+        <div class="container-fluid">
+            @foreach (UserInfo user in ViewBag.Guests)
+            {
+                <div class="row user-card">
+                    <div class="col-md-12">
+                        <div class ="user-card-name">
+                            <span>@user.Name</span>
+                            @switch(user.State) {
+                                case UserState.Participate:
+                                    <span>(участвует)</span>
+                                    break;
+                                case UserState.NotParticipate:
+                                    <span>(не участвует)</span>
+                                    break;
+                            }
+                        </div>
+                        <div><a href="mailto:@user.Email">@user.Email</a></div>
+                        <div>@user.Phone</div>
+                        @if (user.State == UserState.None)
+                        {
+                            <button onclick="updateUserState(@user.UserInfoId, @((int) UserState.Participate))">+</button>
+                            <button onclick="updateUserState(@user.UserInfoId, @((int) UserState.NotParticipate))">-</button>
+                        }
+                        else
+                        {
+                            <button onclick="updateUserState(@user.UserInfoId, @((int) UserState.None))">Сброс</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div>
+            <button class="btn btn-success" onclick="finish()">Завершить мероприятие</button>
+        </div>
+    </div>
+    <div class="col-md-3 filter">
+        <button class="btn">Все гости</button>
+        <button class="btn">Гости, посетившие мероприятие</button>
+        <button class="btn">Гости, не посетившие мероприятие</button>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        (function() {
+            var search = decodeURIComponent(location.href).match(/search=([\w|а-яё]+)/i);
+
+            if (search) {
+                $('input[name="search"]').val(search[1]);
+            }
+        })();
+
+        function finish() {
+            $.ajax({
+                type: 'POST',
+                url: '/Guest/Finish',
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+}
